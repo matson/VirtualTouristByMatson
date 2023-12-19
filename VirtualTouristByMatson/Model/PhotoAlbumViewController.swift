@@ -24,5 +24,31 @@ class PhotoAlbumViewController: UIViewController{
     @IBAction func newCollection(_ sender: UIButton) {
     }
     
+    // MARK: Table View Data Source
+    
+//    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return self.allVillains.count
+//    }
+//
+//    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "VillainCollectionViewCell", for: indexPath) as! VillainCollectionViewCell
+//        let villain = self.allVillains[(indexPath as NSIndexPath).row]
+//
+//        // Set the name and image
+//        cell.label.text = villain.name
+//        cell.villainImageView?.image = UIImage(named: villain.imageName)
+//        //cell.schemeLabel.text = "Scheme: \(villain.evilScheme)"
+//
+//        return cell
+//    }
+//
+//    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath:IndexPath) {
+//
+//        let detailController = self.storyboard!.instantiateViewController(withIdentifier: "VillainDetailViewController") as! VillainDetailViewController
+//        detailController.villain = self.allVillains[(indexPath as NSIndexPath).row]
+//        self.navigationController!.pushViewController(detailController, animated: true)
+//
+//    }
     
 }

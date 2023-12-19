@@ -99,31 +99,63 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
             
             FlickrClient.getPhotos(lat: lat, long: long) { response, error, success in
                 if success {
-                    
-                   
                     // Access the photo array
                     let photos = response!.photos.photo
                     
-                    //let downloadGroup = DispatchGroup()
+                    // Create a dispatch group to wait for all image downloads to complete
+                    let downloadGroup = DispatchGroup()
                     
                     // Iterate over each photo object
                     for photo in photos {
-                        
                         let pic = Picture(context: self.dataController.viewContext)
                         
                         // Construct the photo URL using the properties of the photo object
                         let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
                         
                         // Set the photo URL and associate it with the pin
-                        pic.imageURL = photoURLString
+                        //pic.imageURL = photoURLString
                         pic.pin = pin
                         
-                        // Append the photo URL to the array
-                        self.photoURLs.append(photoURLString)
+                        // Enter the dispatch group before starting the download
+                        downloadGroup.enter()
                         
+                        // Download the image data
+                        let session = URLSession.shared
+                        let url = URL(string: photoURLString)!
+                        
+                        let task = session.dataTask(with: url) { (data, response, error) in
+                            defer {
+                                // Leave the dispatch group when the download is complete
+                                downloadGroup.leave()
+                            }
+                            
+                            if let error = error {
+                                print("Error downloading image: \(error.localizedDescription)")
+                                return
+                            }
+                            
+                            guard let data = data, let image = UIImage(data: data) else {
+                                print("Invalid image data")
+                                return
+                            }
+                            
+                            // Convert the image to binary data
+                            guard let imageData = image.jpegData(compressionQuality: 1.0) else {
+                                print("Error converting image to data")
+                                return
+                            }
+                            
+                            // Set the image data for the Picture entity
+                            pic.imageData = imageData
+                        }
+                        
+                        task.resume()
                     }
-                    try? self.dataController.viewContext.save()
                     
+                    // Wait for all image downloads to complete
+                    downloadGroup.notify(queue: .main) {
+                        try? self.dataController.viewContext.save()
+                    }
                 }
             }
             
@@ -139,27 +171,54 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     
     // -MARK: Pin Methods
     
+    //    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+    //        // Check if the selected annotation view is of type MKPinAnnotationView
+    //        if let pinAnnotationView = view as? MKPinAnnotationView {
+    //                // Call the segue with the specified identifier
+    //                performSegue(withIdentifier: "Album", sender: self)
+    //            }
+    //        }
+    //    }
+    //
+    //    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    //        if segue.identifier == "Album" {
+    //            // Check if the destination view controller is your photo album view controller
+    //            if let photoAlbumVC = segue.destination as? PhotoAlbumViewController {
+    //                // Check if the sender is an MKAnnotationView
+    //                if let annotationView = sender as? MKAnnotationView {
+    //                    // Access the selected annotation object
+    //                    if let annotation = annotationView.annotation as? YourAnnotationClass {
+    //                        // Pass the selected pin object to the photo album view controller
+    //                        photoAlbumVC.selectedPin = annotation.pin
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    
+    
+    
     //    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-    //        // Check if the tapped annotation is an MKPointAnnotation
-    //        guard let annotation = view.annotation as? MKPointAnnotation else {
-    //            return
+    //            // Check if the tapped annotation is an MKPointAnnotation
+    //            guard let annotation = view.annotation as? MKPointAnnotation else {
+    //                return
+    //            }
+    //
+    //            // Perform actions based on the tapped annotation
+    //            if let pin = fetchPinFromCoreData(with: annotation.coordinate) {
+    //                // Pin is tapped, do something with it
+    //                // For example, navigate to a new view passing the pin data
+    //                //let pinDetailsViewController = PinDetailsViewController(pin: pin)
+    //                navigationController?.pushViewController(pinDetailsViewController, animated: true)
+    //            }
     //        }
     //
-    //        // Perform actions based on the tapped annotation
-    //        if let pin = fetchPinFromCoreData(with: annotation.coordinate) {
-    //            // Pin is tapped, do something with it
-    //            // For example, navigate to a new view passing the pin data
-    //            //let pinDetailsViewController = PinDetailsViewController(pin: pin)
-    //            navigationController?.pushViewController(pinDetailsViewController, animated: true)
+    //        // Helper method to fetch the pin from Core Data based on the coordinate
+    //        func fetchPinFromCoreData(with coordinate: CLLocationCoordinate2D) -> Pin? {
+    //            // Fetch the pin from Core Data based on the coordinate
+    //            // Return the fetched pin or nil if not found
+    //            return nil
     //        }
-    //    }
-    //
-    //    // Helper method to fetch the pin from Core Data based on the coordinate
-    //    func fetchPinFromCoreData(with coordinate: CLLocationCoordinate2D) -> Pin? {
-    //        // Fetch the pin from Core Data based on the coordinate
-    //        // Return the fetched pin or nil if not found
-    //        return nil
-    //    }
     
     //Links to help:
     //Details:
@@ -184,8 +243,6 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
 }
 
 //Details: locations and photo albums will be stored in core data
-//figure out how to save with the pin object
-//then to show the next screen with the photos on it from core data.
-//you will have to populate the collection view
-//by then the project would be about 75% completed.
+//assume it saves to the pin.
+//now find the way to
 

@@ -34,6 +34,7 @@
                     </view>
                     <connections>
                         <outlet property="mapView" destination="jcC-ap-Rpq" id="fz9-O1-sOu"/>
+                        <segue destination="96K-3G-ZfU" kind="presentation" identifier="Album" id="Xdu-Tc-kCO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -45,18 +46,18 @@
             <objects>
                 <viewController id="96K-3G-ZfU" customClass="PhotoAlbumViewController" customModule="VirtualTouristByMatson" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="otk-QD-aWm">
-                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="787"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="II0-p4-0eq">
-                                <rect key="frame" x="0.0" y="91" width="390" height="200"/>
+                                <rect key="frame" x="0.0" y="47" width="390" height="200"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="gHS-rM-RBE"/>
                                 </constraints>
                                 <standardMapConfiguration key="preferredConfiguration"/>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="c5R-CV-8Nz">
-                                <rect key="frame" x="0.0" y="299" width="390" height="444"/>
+                                <rect key="frame" x="0.0" y="255" width="390" height="465"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="TGp-Wl-ba8">
                                     <size key="itemSize" width="128" height="128"/>
@@ -90,7 +91,7 @@
                                 </cells>
                             </collectionView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XBj-yG-9Xa">
-                                <rect key="frame" x="0.0" y="751" width="390" height="59"/>
+                                <rect key="frame" x="0.0" y="728" width="390" height="59"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="New Collection"/>
                                 <connections>
@@ -124,7 +125,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WPS-e4-7Xe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2153.8461538461538" y="3.5545023696682461"/>
+            <point key="canvasLocation" x="2202" y="4"/>
         </scene>
         <!--Image Detail View Controller-->
         <scene sceneID="mFa-54-WMI">
@@ -157,9 +158,12 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HuZ-7Q-amf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1444.6153846153845" y="3.5545023696682461"/>
+            <point key="canvasLocation" x="1392" y="-439"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="Xdu-Tc-kCO"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
