@@ -9,10 +9,10 @@ import UIKit
 import MapKit
 import CoreData
 
-
 class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     
     @IBOutlet weak var mapView: MKMapView!
+    var dataController:DataController!
     var latitude: Float = 0.00
     var longitude: Float = 0.00
     var photoURLs: [String] = []
@@ -27,6 +27,9 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
         super.viewDidLoad()
         
         mapView.delegate = self
+        // Get the dataController instance from the AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        dataController = appDelegate.dataController
         
         setUpMap()
         
@@ -88,15 +91,16 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
             let long = Float(coordinate.longitude)
             
             // Create a new instance of the Pin entity
-            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-                return
-            }
-            let managedContext = appDelegate.persistentContainer.viewContext
-            let entity = NSEntityDescription.entity(forEntityName: "Pin", in: managedContext)!
-            let pin = NSManagedObject(entity: entity, insertInto: managedContext)
+            let pin = Pin(context: dataController.viewContext)
+            pin.latitude = lat
+            pin.longitude = long
+            
+            try? self.dataController.viewContext.save()
             
             FlickrClient.getPhotos(lat: lat, long: long) { response, error, success in
                 if success {
+                    
+                   
                     // Access the photo array
                     let photos = response!.photos.photo
                     
@@ -105,39 +109,24 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                     // Iterate over each photo object
                     for photo in photos {
                         
+                        let pic = Picture(context: self.dataController.viewContext)
+                        
                         // Construct the photo URL using the properties of the photo object
                         let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                        
+                        // Set the photo URL and associate it with the pin
+                        pic.imageURL = photoURLString
+                        pic.pin = pin
                         
                         // Append the photo URL to the array
                         self.photoURLs.append(photoURLString)
                         
                     }
+                    try? self.dataController.viewContext.save()
                     
                 }
             }
             
-            for photoURL in photoURLs {
-                let entity = NSEntityDescription.entity(forEntityName: "CorePhoto", in: managedContext)!
-                let corePhoto = NSManagedObject(entity: entity, insertInto: managedContext)
-                
-                // Set the photo URL to the `url` property of the CorePhoto entity
-                corePhoto.setValue(photoURL, forKey: "imageURL")
-                
-                // Associate the CorePhoto entity with the selected pin
-                //corePhoto.pin = pin as! Pin
-                //corePhoto.setValue(selectedPin, forKey: "pin")
-            }
-            
-            // Set the latitude and longitude values to the Pin entity
-            pin.setValue(lat, forKey: "latitude")
-            pin.setValue(long, forKey: "longitude")
-            
-            // Save the Pin entity to Core Data
-            do {
-                try managedContext.save()
-            } catch let error as NSError {
-                print("Could not save. \(error), \(error.userInfo)")
-            }
             // Create a new annotation
             let annotation = MKPointAnnotation()
             annotation.coordinate = coordinate

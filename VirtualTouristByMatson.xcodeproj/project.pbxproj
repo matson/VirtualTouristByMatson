@@ -21,6 +21,7 @@
 		3FBB9E422B2B70B300EA568F /* PhotoSearchResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBB9E412B2B70B300EA568F /* PhotoSearchResponse.swift */; };
 		3FBB9E462B2B792D00EA568F /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBB9E452B2B792D00EA568F /* Photos.swift */; };
 		3FBB9E482B2B795500EA568F /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBB9E472B2B795500EA568F /* Photo.swift */; };
+		3FBB9E4A2B32008000EA568F /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FBB9E492B32008000EA568F /* DataController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		3FBB9E412B2B70B300EA568F /* PhotoSearchResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSearchResponse.swift; sourceTree = "<group>"; };
 		3FBB9E452B2B792D00EA568F /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
 		3FBB9E472B2B795500EA568F /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
+		3FBB9E492B32008000EA568F /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				3FBB9E412B2B70B300EA568F /* PhotoSearchResponse.swift */,
 				3FBB9E452B2B792D00EA568F /* Photos.swift */,
 				3FBB9E472B2B795500EA568F /* Photo.swift */,
+				3FBB9E492B32008000EA568F /* DataController.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -180,6 +183,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3F1059862B29225100BBCB70 /* TravelLocationsViewController.swift in Sources */,
+				3FBB9E4A2B32008000EA568F /* DataController.swift in Sources */,
 				3F1061E42B2A4A6E00EBED3C /* ImageDetailViewController.swift in Sources */,
 				3F1061E62B2A4F7000EBED3C /* VirtualTouristViewCell.swift in Sources */,
 				3F10598C2B29225100BBCB70 /* VirtualTouristByMatson.xcdatamodeld in Sources */,
