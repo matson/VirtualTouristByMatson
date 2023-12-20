@@ -119,6 +119,7 @@
                         <barButtonItem key="backBarButtonItem" title="Back" id="d8t-kG-qx6"/>
                     </navigationItem>
                     <connections>
+                        <outlet property="flowLayout" destination="TGp-Wl-ba8" id="0T7-r3-auF"/>
                         <outlet property="mapView" destination="II0-p4-0eq" id="mMO-ST-yFp"/>
                         <outlet property="photoView" destination="c5R-CV-8Nz" id="DqQ-lD-eAy"/>
                     </connections>

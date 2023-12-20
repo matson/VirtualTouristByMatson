@@ -108,19 +108,20 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                     
                     // Iterate over each photo object
                     for photo in photos {
-                        let pic = Picture(context: self.dataController.viewContext)
+                        
+                        print("got the data though might have not saved correctly.")
+                        
+                        let picture = Picture(context: self.dataController.viewContext)
                         
                         // Construct the photo URL using the properties of the photo object
                         let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
                         
-                        // Set the photo URL and associate it with the pin
-                        //pic.imageURL = photoURLString
-                        pic.pin = pin
+                        picture.pin = pin
                         
                         // Enter the dispatch group before starting the download
                         downloadGroup.enter()
                         
-                        // Download the image data
+                        // Download the image data from the URL
                         let session = URLSession.shared
                         let url = URL(string: photoURLString)!
                         
@@ -147,7 +148,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                             }
                             
                             // Set the image data for the Picture entity
-                            pic.imageData = imageData
+                            picture.imageData = imageData
                         }
                         
                         task.resume()
@@ -172,26 +173,119 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     
     // -MARK: Pin Methods
     
+    var pinImageData: [Data] = []
+    //this is for testing since we cannot save the imageData in coreData.
+    
     //to TAP on a pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        
+        // Assuming you have a reference to your Core Data managed object context
+        let context = dataController.viewContext
         // Check if the selected annotation view is of type MKPinAnnotationView
         if let pinAnnotationView = view as? MKMarkerAnnotationView {
+            
+            print("got the pin")
             // Find the selected pin based on the annotation coordinate
             let selectedCoordinate = pinAnnotationView.annotation?.coordinate
             let selectedLatitude = Float(selectedCoordinate?.latitude ?? 0.0)
             let selectedLongitude = Float(selectedCoordinate?.longitude ?? 0.0)
-          
+            
             // Fetch the Pin object from Core Data using the selected latitude and longitude
             let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "latitude == %@ AND longitude == %@", selectedLatitude as NSNumber, selectedLongitude as NSNumber)
-            
+            print("have a pin lat and long")
             do {
-                let pins = try dataController.viewContext.fetch(fetchRequest)
+                let pins = try context.fetch(fetchRequest)
+                var imageDataArray: [Data] = []
                 if let selectedPin = pins.first {
                     
-                    // Call the segue with the specified identifier and pass the selected pin
-                    performSegue(withIdentifier: "Album", sender: selectedPin)
+                    //if the pin does NOT have downloaded Data
+                    if selectedPin.photo?.count == 0 {
+                        print("I should be in here")
+                        FlickrClient.getPhotos(lat: selectedLatitude, long: selectedLongitude) { response, error, success in
+                            if success {
+                                // Access the photo array
+                                let photos = response!.photos.photo
+                                
+                                // Create a dispatch group to wait for all image downloads to complete
+                                let downloadGroup = DispatchGroup()
+                                
+                                // Iterate over each photo object
+                                for photo in photos {
+                                    // Construct the photo URL using the properties of the photo object
+                                    let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                                    
+                                    // Enter the dispatch group before starting the download
+                                    downloadGroup.enter()
+                                    
+                                    //let picture = Picture(context: self.dataController.viewContext)
+                                    
+                                    //pin to picture relationship
+                                    //picture.pin = selectedPin
+                                    
+                                    // Download the image data from the URL
+                                    let session = URLSession.shared
+                                    let url = URL(string: photoURLString)!
+                                    
+                                    let task = session.dataTask(with: url) { (data, response, error) in
+                                        defer {
+                                            // Leave the dispatch group when the download is complete
+                                            downloadGroup.leave()
+                                            
+                                        }
+                                        
+                                        if let error = error {
+                                            print("Error downloading image: \(error.localizedDescription)")
+                                            return
+                                        }
+                                        
+                                        guard let data = data, let image = UIImage(data: data) else {
+                                            print("Invalid image data")
+                                            return
+                                        }
+                                        
+                                        // Convert the image to binary data
+                                        guard let imageData = image.jpegData(compressionQuality: 1.0) else {
+                                            print("Error converting image to data")
+                                            return
+                                        }
+                                    
+                                        imageDataArray.append(imageData)
+                                        
+                                    }
+                                    
+                                    task.resume()
+                                }
+                                downloadGroup.notify(queue: .main) {
+                                    //try? self.dataController.viewContext.save()
+                                    // Pass the fetched imageData to the next view controller
+                                    if let selectedPin = pins.first {
+                                        if !imageDataArray.isEmpty {
+                                            self.pinImageData = imageDataArray
+                                        }
+                                        self.performSegue(withIdentifier: "Album", sender: selectedPin)
+                                    }
+                                }
+                            }
+                        }
+                        // Pin does not have any downloaded images
+                        // Call the Flickr API and download images for the pin
+                        // Save the downloaded images to Core Data
+                        
+                        // After saving, fetch the images again from Core Data
+                        
+                        // Access the imageData property of the first picture
+                        //                        if let pictures = selectedPin.photo?.allObjects as? [Picture] {
+                        //                            // Access the imageData property of the first picture
+                        //                            imageData = pictures.first?.imageData
+                        //                        }
+                    } else {
+                        //if it DOES
+                        if let pictures = selectedPin.photo?.allObjects as? [Picture] {
+                            // Access the imageData property of the first picture
+                            //pinImageData = pictures.first?.imageData
+                        }
+                        performSegue(withIdentifier: "Album", sender: selectedPin)
+                    }
                 }
             } catch {
                 fatalError("Failed to fetch pin: \(error)")
@@ -203,57 +297,22 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "Album" {
             if let selectedPin = sender as? Pin {
+                print("got into the segue")
                 let destinationVC = segue.destination as! PhotoAlbumViewController
-                //sends pin to next controller. 
+                //sends pin to next controller.
                 destinationVC.pin = selectedPin
+                // Pass the imageData to the next view controller
+                destinationVC.imageData = pinImageData
+                
             }
         }
     }
-
-//    In the collection view controller's collectionView(_:numberOfItemsInSection:) method, return the count of Picture objects associated with the pin:
-//    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        return pin.photos?.count ?? 0
-//    }
-//    In the collection view controller's collectionView(_:cellForItemAt:) method, retrieve the imageData for each Picture object and display it in the collection view cell:
-//    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCell
-//
-//        guard let pictures = pin.photos?.allObjects as? [Picture] else {
-//            return cell
-//        }
-//
-//        let picture = pictures[indexPath.item]
-//        if let imageData = picture.imageData, let image = UIImage(data: imageData) {
-//            cell.imageView.image = image
-//        }
-//
-//        return cell
-//    }
-//
     
-    //Links to help:
-    //Details:
-    //https://docs.google.com/document/d/1j-UIi1jJGuNWKoEjEk09wwYf4ebefnwcVrUYbiHh1MI/pub
-    //API:
-    //https://www.flickr.com/services/api/
-    //requirements:
-    //https://review.udacity.com/#!/rubrics/1990/view
     
-    //Strat:
-    //Build the UI, connect all buttons/logic
-    //Build the APIS, make sure they work
-    //Test Functionality, Make Core Data model
-    //Revise and Repeat/Test
-    
-    //    Main Screen: The app's main screen typically displays a map view, allowing users to select a location they want to explore. It may also include a search bar or other controls for navigating the map.
-    //
-    //    Photo Collection Screen: Once a location is selected, the app displays a collection of photos associated with that location. This screen usually shows a grid or list view of thumbnail images. Users can tap on a photo to view it in a larger size or perform additional actions like saving or deleting the photo.
-    //
-    //    Photo Detail Screen: When a user taps on a photo, a detail screen is shown with a larger view of the photo along with any additional information like the photo's title, description, or tags. This screen may also include buttons or controls for saving, sharing, or deleting the photo.
+    func downLoad(){
+        
+    }
     
 }
 
-//Details: locations and photo albums will be stored in core data
-//assume it saves to the pin.
-//now find the way to
 
