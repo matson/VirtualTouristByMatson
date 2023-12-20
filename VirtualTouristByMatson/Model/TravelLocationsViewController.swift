@@ -82,6 +82,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
         mapView.setRegion(coordinateRegion, animated: true)
     }
     
+    //to ADD a pin
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             let touchPoint = gestureRecognizer.location(in: mapView)
@@ -171,54 +172,64 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     
     // -MARK: Pin Methods
     
-    //    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-    //        // Check if the selected annotation view is of type MKPinAnnotationView
-    //        if let pinAnnotationView = view as? MKPinAnnotationView {
-    //                // Call the segue with the specified identifier
-    //                performSegue(withIdentifier: "Album", sender: self)
-    //            }
-    //        }
-    //    }
-    //
-    //    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    //        if segue.identifier == "Album" {
-    //            // Check if the destination view controller is your photo album view controller
-    //            if let photoAlbumVC = segue.destination as? PhotoAlbumViewController {
-    //                // Check if the sender is an MKAnnotationView
-    //                if let annotationView = sender as? MKAnnotationView {
-    //                    // Access the selected annotation object
-    //                    if let annotation = annotationView.annotation as? YourAnnotationClass {
-    //                        // Pass the selected pin object to the photo album view controller
-    //                        photoAlbumVC.selectedPin = annotation.pin
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
+    //to TAP on a pin
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        
+        // Check if the selected annotation view is of type MKPinAnnotationView
+        if let pinAnnotationView = view as? MKMarkerAnnotationView {
+            // Find the selected pin based on the annotation coordinate
+            let selectedCoordinate = pinAnnotationView.annotation?.coordinate
+            let selectedLatitude = Float(selectedCoordinate?.latitude ?? 0.0)
+            let selectedLongitude = Float(selectedCoordinate?.longitude ?? 0.0)
+          
+            // Fetch the Pin object from Core Data using the selected latitude and longitude
+            let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "latitude == %@ AND longitude == %@", selectedLatitude as NSNumber, selectedLongitude as NSNumber)
+            
+            do {
+                let pins = try dataController.viewContext.fetch(fetchRequest)
+                if let selectedPin = pins.first {
+                    
+                    // Call the segue with the specified identifier and pass the selected pin
+                    performSegue(withIdentifier: "Album", sender: selectedPin)
+                }
+            } catch {
+                fatalError("Failed to fetch pin: \(error)")
+            }
+        }
+    }
     
     
-    
-    //    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-    //            // Check if the tapped annotation is an MKPointAnnotation
-    //            guard let annotation = view.annotation as? MKPointAnnotation else {
-    //                return
-    //            }
-    //
-    //            // Perform actions based on the tapped annotation
-    //            if let pin = fetchPinFromCoreData(with: annotation.coordinate) {
-    //                // Pin is tapped, do something with it
-    //                // For example, navigate to a new view passing the pin data
-    //                //let pinDetailsViewController = PinDetailsViewController(pin: pin)
-    //                navigationController?.pushViewController(pinDetailsViewController, animated: true)
-    //            }
-    //        }
-    //
-    //        // Helper method to fetch the pin from Core Data based on the coordinate
-    //        func fetchPinFromCoreData(with coordinate: CLLocationCoordinate2D) -> Pin? {
-    //            // Fetch the pin from Core Data based on the coordinate
-    //            // Return the fetched pin or nil if not found
-    //            return nil
-    //        }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "Album" {
+            if let selectedPin = sender as? Pin {
+                let destinationVC = segue.destination as! PhotoAlbumViewController
+                //sends pin to next controller. 
+                destinationVC.pin = selectedPin
+            }
+        }
+    }
+
+//    In the collection view controller's collectionView(_:numberOfItemsInSection:) method, return the count of Picture objects associated with the pin:
+//    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return pin.photos?.count ?? 0
+//    }
+//    In the collection view controller's collectionView(_:cellForItemAt:) method, retrieve the imageData for each Picture object and display it in the collection view cell:
+//    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCell
+//
+//        guard let pictures = pin.photos?.allObjects as? [Picture] else {
+//            return cell
+//        }
+//
+//        let picture = pictures[indexPath.item]
+//        if let imageData = picture.imageData, let image = UIImage(data: imageData) {
+//            cell.imageView.image = image
+//        }
+//
+//        return cell
+//    }
+//
     
     //Links to help:
     //Details:
