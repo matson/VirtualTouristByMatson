@@ -18,15 +18,20 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     var pin: Pin!
     var imageData: [Data]?
     var images: [UIImage] = []
+    var longitude: Double = 0.00
+    var latitude: Double = 0.00
+    var selectedLocation: CLLocation?
     
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+       
+        setUpMap()
         
         // Set the delegate and data source of the collection view
         photoView.delegate = self
@@ -56,7 +61,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         let space: CGFloat = 3.0
         let numberOfItemsPerRow: CGFloat = 3
         let dimension = (collectionViewWidth - ((numberOfItemsPerRow - 1) * space)) / numberOfItemsPerRow
-
+        
         return CGSize(width: dimension, height: dimension)
     }
     
@@ -72,16 +77,29 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         return cell
     }
     
+    //to Delete the cell/photo
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // Get the selected item's index path
-        let selectedIndexPath = indexPath
+        let selectedPhoto = images[indexPath.item] // Assuming `photos` is your data source array
         
-        // Perform the removal logic here
-        // For example, you can remove the item from your data source array
-//        dismiss(animated: true, completion: nil)
+        // Delete the selected photo from Core Data
+        //managedObjectContext.delete(selectedPhoto)
         
-        // Reload the collection view to reflect the changes
-        collectionView.reloadData()
+        // Remove the selected photo from the data source array
+        images.remove(at: indexPath.item)
+        
+        // Update the collection view and make it "flow"
+        collectionView.performBatchUpdates({
+            collectionView.deleteItems(at: [indexPath])
+        }, completion: { _ in
+            // Optional: Perform any additional actions after the deletion and cell reordering
+        })
+        
+        // Save the changes to Core Data
+        //        do {
+        //            try managedObjectContext.save()
+        //        } catch {
+        //            print("Error saving context: \(error)")
+        //        }
     }
     
     func setRows(){
@@ -110,6 +128,18 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     images.append(image)
                 }
             }
+        }
+    }
+    
+    func setUpMap(){
+        //annotate map to show location of photos downloaded from previous controller 
+        if let location = selectedLocation {
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = location.coordinate
+            mapView.addAnnotation(annotation)
+            
+            let region = MKCoordinateRegion(center: location.coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
+            mapView.setRegion(region, animated: true)
         }
     }
 }

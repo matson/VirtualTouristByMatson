@@ -178,6 +178,9 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     
     //to TAP on a pin
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        //send the latitude and longitude points over
+        //to place on the map
+        
         // Assuming you have a reference to your Core Data managed object context
         let context = dataController.viewContext
         // Check if the selected annotation view is of type MKPinAnnotationView
@@ -248,7 +251,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                                             print("Error converting image to data")
                                             return
                                         }
-                                    
+                                        
                                         imageDataArray.append(imageData)
                                         
                                     }
@@ -303,8 +306,12 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                 destinationVC.pin = selectedPin
                 // Pass the imageData to the next view controller
                 destinationVC.imageData = pinImageData
+                // Pass the latitude and longitude to the next view controller
+                let location = CLLocation(latitude: CLLocationDegrees(selectedPin.latitude), longitude: CLLocationDegrees(selectedPin.longitude))
+                destinationVC.selectedLocation = location
                 
             }
+            
         }
     }
     
