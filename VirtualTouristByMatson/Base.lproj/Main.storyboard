@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UcF-FC-xQp">
     <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
@@ -19,7 +19,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jcC-ap-Rpq">
-                                <rect key="frame" x="0.0" y="47" width="390" height="763"/>
+                                <rect key="frame" x="0.0" y="91" width="390" height="719"/>
                                 <standardMapConfiguration key="preferredConfiguration"/>
                             </mapView>
                         </subviews>
@@ -32,32 +32,33 @@
                             <constraint firstItem="jcC-ap-Rpq" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="o7E-Cg-P1k"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="frW-To-QLl"/>
                     <connections>
                         <outlet property="mapView" destination="jcC-ap-Rpq" id="fz9-O1-sOu"/>
-                        <segue destination="96K-3G-ZfU" kind="presentation" identifier="Album" id="Xdu-Tc-kCO"/>
+                        <segue destination="96K-3G-ZfU" kind="show" identifier="Album" id="vfi-dB-XS6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="691" y="4"/>
+            <point key="canvasLocation" x="2791" y="-555"/>
         </scene>
         <!--Virtual Tourist-->
         <scene sceneID="jgk-gV-nRU">
             <objects>
                 <viewController id="96K-3G-ZfU" customClass="PhotoAlbumViewController" customModule="VirtualTouristByMatson" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="otk-QD-aWm">
-                        <rect key="frame" x="0.0" y="0.0" width="390" height="787"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="II0-p4-0eq">
-                                <rect key="frame" x="0.0" y="47" width="390" height="200"/>
+                                <rect key="frame" x="0.0" y="91" width="390" height="200"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="gHS-rM-RBE"/>
                                 </constraints>
                                 <standardMapConfiguration key="preferredConfiguration"/>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="c5R-CV-8Nz">
-                                <rect key="frame" x="0.0" y="255" width="390" height="465"/>
+                                <rect key="frame" x="0.0" y="299" width="390" height="395"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="TGp-Wl-ba8">
                                     <size key="itemSize" width="128" height="128"/>
@@ -91,7 +92,7 @@
                                 </cells>
                             </collectionView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XBj-yG-9Xa">
-                                <rect key="frame" x="0.0" y="728" width="390" height="59"/>
+                                <rect key="frame" x="0.0" y="702" width="390" height="59"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="New Collection"/>
                                 <connections>
@@ -115,9 +116,11 @@
                             <constraint firstItem="yDS-iU-5ua" firstAttribute="bottom" secondItem="XBj-yG-9Xa" secondAttribute="bottom" id="z61-tK-QyY"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" title="Virtual Tourist" id="uVt-vW-cEh">
-                        <barButtonItem key="backBarButtonItem" title="Back" id="d8t-kG-qx6"/>
+                        <barButtonItem key="backBarButtonItem" title="Back" id="Z62-Le-8nz"/>
                     </navigationItem>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="flowLayout" destination="TGp-Wl-ba8" id="0T7-r3-auF"/>
                         <outlet property="mapView" destination="II0-p4-0eq" id="mMO-ST-yFp"/>
@@ -126,7 +129,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="WPS-e4-7Xe" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2202" y="4"/>
+            <point key="canvasLocation" x="4632.3076923076924" y="-389.57345971563979"/>
         </scene>
         <!--Image Detail View Controller-->
         <scene sceneID="mFa-54-WMI">
@@ -141,29 +144,47 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="h3i-OE-mhu" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2948" y="4"/>
+            <point key="canvasLocation" x="5506.1538461538457" y="-390.28436018957342"/>
         </scene>
         <!--Navigation Controller-->
-        <scene sceneID="Oaf-PH-x6a">
+        <scene sceneID="49D-9c-4Nf">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="zNW-NQ-4Go" sceneMemberID="viewController">
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="bwS-q2-hhi" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="lkq-4W-lXP">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="kgj-oj-3iT">
                         <rect key="frame" x="0.0" y="47" width="390" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
-                        <segue destination="96K-3G-ZfU" kind="relationship" relationship="rootViewController" id="gvm-dY-3CZ"/>
+                        <segue destination="96K-3G-ZfU" kind="relationship" relationship="rootViewController" id="nGD-Go-4YM"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="HuZ-7Q-amf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EDl-hu-ezF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1392" y="-439"/>
+            <point key="canvasLocation" x="3623" y="-390"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="5EH-yN-llX">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="UcF-FC-xQp" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="Uc1-MB-I83">
+                        <rect key="frame" x="0.0" y="47" width="390" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="IQe-lP-GyM"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="q0H-oz-hUM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1945" y="-554"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Xdu-Tc-kCO"/>
+        <segue reference="vfi-dB-XS6"/>
     </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
