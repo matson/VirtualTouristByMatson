@@ -17,9 +17,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     @IBOutlet weak var photoView: UICollectionView!
     var pin: Pin!
     var imageData: [Data]?
-    var images: [UIImage] = []
-    var longitude: Double = 0.00
-    var latitude: Double = 0.00
+    //var images: [UIImage] = []
+    var images: [ImageModel] = []
+    var imageURLS: [String] = []
     var selectedLocation: CLLocation?
     
     
@@ -30,7 +30,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+        
         setUpMap()
         
         // Set the delegate and data source of the collection view
@@ -47,6 +47,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     @IBAction func newCollection(_ sender: UIButton) {
+        
+        //this should replace the images with a new set from Flickr.
+        //use this number as the page parameter to get the random images.
+        //when pressing this I should make a call to the random page url which will fetch
+        //a different set of photos
+        //make the call getPhotosRandom and populate the imageArray
+        
         
     }
     
@@ -71,8 +78,19 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         // Retrieve the imageData from the selected pin using the index path
         let imageData = images[indexPath.item]
         
-        //set the image to the cell image
-        cell.photo.image = imageData
+        if imageData.isDownloaded {
+            // The image has been downloaded, so display it in the cell
+            cell.photo.image = imageData.image
+        } else {
+            // The image is not downloaded yet, so display a placeholder
+            cell.photo.image = UIImage(named: "placeholder")
+            
+            // Start downloading the image asynchronously
+            //converting the urls into data bytes...
+            //how do I reference the urls again?
+            //convert the imageURLS array to the downloads. 
+            
+        }
         
         return cell
     }
@@ -125,14 +143,17 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         if let imageData = imageData {
             for data in imageData {
                 if let image = UIImage(data: data) {
-                    images.append(image)
+                    //images.append(image)
+                    let imageModel = ImageModel(image: image, isDownloaded: false)
+                    images.append(imageModel)
                 }
             }
         }
+        
     }
     
     func setUpMap(){
-        //annotate map to show location of photos downloaded from previous controller 
+        //annotate map to show location of photos downloaded from previous controller
         if let location = selectedLocation {
             let annotation = MKPointAnnotation()
             annotation.coordinate = location.coordinate

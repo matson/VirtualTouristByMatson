@@ -174,6 +174,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     // -MARK: Pin Methods
     
     var pinImageData: [Data] = []
+    var imageUrls: [String] = []
     //this is for testing since we cannot save the imageData in coreData.
     
     //to TAP on a pin
@@ -199,6 +200,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
             do {
                 let pins = try context.fetch(fetchRequest)
                 var imageDataArray: [Data] = []
+                var stringArray: [String] = []
                 if let selectedPin = pins.first {
                     
                     //if the pin does NOT have downloaded Data
@@ -253,6 +255,8 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                                         }
                                         
                                         imageDataArray.append(imageData)
+                                        stringArray.append(photoURLString)
+                                        
                                         
                                     }
                                     
@@ -264,6 +268,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                                     if let selectedPin = pins.first {
                                         if !imageDataArray.isEmpty {
                                             self.pinImageData = imageDataArray
+                                            self.imageUrls = stringArray
                                         }
                                         self.performSegue(withIdentifier: "Album", sender: selectedPin)
                                     }
@@ -306,6 +311,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                 destinationVC.pin = selectedPin
                 // Pass the imageData to the next view controller
                 destinationVC.imageData = pinImageData
+                destinationVC.imageURLS = imageUrls
                 // Pass the latitude and longitude to the next view controller
                 let location = CLLocation(latitude: CLLocationDegrees(selectedPin.latitude), longitude: CLLocationDegrees(selectedPin.longitude))
                 destinationVC.selectedLocation = location

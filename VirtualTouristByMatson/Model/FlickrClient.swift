@@ -24,10 +24,16 @@ class FlickrClient {
         
         
         case getPhotos(Float, Float)
+        case getPhotosRandom(Int)
         
         var stringValue: String {
             switch self {
             case .getPhotos(let lat, let long): return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&format=json&nojsoncallback=1&lat=\(lat)&lon=\(long)&radius=5"
+            case .getPhotosRandom(let page):
+                        let randomPage = Int.random(in: 1...100) // Generate a random page number
+                return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&format=json&nojsoncallback=1&page=\(randomPage)"
+              
+                
             }
         }
         
@@ -75,6 +81,10 @@ class FlickrClient {
                 completion(nil, error, false)
             }
         }
+    }
+    
+    class func getPhotosRandom(){
+        //use the random url instead of the normal one.
     }
 }
 
