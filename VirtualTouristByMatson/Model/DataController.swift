@@ -8,11 +8,14 @@
 import Foundation
 import CoreData
 
-//for CoreData simplification:
+//this file is to create the CoreData Stack:
 
 class DataController {
+    
+    //hold the persistent container
+    //hold the persistent store, and help with the context
 
-    let persistentContainer: NSPersistentContainer
+    let persistentContainer:NSPersistentContainer
 
     var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
@@ -27,18 +30,9 @@ class DataController {
             guard error == nil else {
                 fatalError("Failed to load persistent stores: \(error!)")
             }
+            //self.autoSaveViewContext()
             completion?()
         }
     }
 
-    func saveContext() {
-        if viewContext.hasChanges {
-            do {
-                try viewContext.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
 }

@@ -9,27 +9,44 @@ import UIKit
 import MapKit
 import CoreData
 
-class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
+class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetchedResultsControllerDelegate{
     
     @IBOutlet weak var mapView: MKMapView!
+    
     var dataController:DataController!
+    
+    //defined to fetch pins
+    var fetchedResultsController:NSFetchedResultsController<Pin>!
+    
     var latitude: Float = 0.00
     var longitude: Float = 0.00
     var photoURLs: [String] = []
     var downloadedImages: [UIImage] = []
     
-    
-    //state should save
-    //Tapping and holding map should add a pin.
-    //When pin is tapped, it will navigate to the photo album view associated with pin
+    //to fetch pins:
+    fileprivate func setUpFetchedResultsController() {
+        
+        let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "pins")
+        fetchedResultsController.delegate = self
+        do{
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("fetch could not be performed: \(error.localizedDescription)")
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setUpFetchedResultsController()
+        
         mapView.delegate = self
+        
         // Get the dataController instance from the AppDelegate
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        dataController = appDelegate.dataController
+        //        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        //        dataController = appDelegate.dataController
         
         setUpMap()
         
@@ -45,31 +62,24 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
     // MARK: Helper Functions
     
     func getPins(){
-        // Fetch the saved pins from Core Data
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+        // Fetch the saved pins from Core Data using the controller
+        guard let pins = fetchedResultsController.fetchedObjects else {
             return
         }
-        let managedContext = appDelegate.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "Pin")
         
-        do {
-            let pins = try managedContext.fetch(fetchRequest)
+        // Add the fetched pins as annotations on the map
+        for pin in pins {
+            let latitude = pin.value(forKey: "latitude") as? Float ?? 0.0
+            let longitude = pin.value(forKey: "longitude") as? Float ?? 0.0
             
-            // Add the fetched pins as annotations on the map
-            for pin in pins {
-                let latitude = pin.value(forKey: "latitude") as? Float ?? 0.0
-                let longitude = pin.value(forKey: "longitude") as? Float ?? 0.0
-                
-                let coordinate = CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude), longitude: CLLocationDegrees(longitude))
-                
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = coordinate
-                
-                mapView.addAnnotation(annotation)
-            }
-        } catch let error as NSError {
-            print("Could not fetch. \(error), \(error.userInfo)")
+            let coordinate = CLLocationCoordinate2D(latitude: CLLocationDegrees(latitude), longitude: CLLocationDegrees(longitude))
+            
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            
+            mapView.addAnnotation(annotation)
         }
+        
     }
     
     func setUpMap(){
@@ -81,6 +91,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
         // Set the initial region of the map
         mapView.setRegion(coordinateRegion, animated: true)
     }
+    
     
     //to ADD a pin
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
@@ -109,13 +120,12 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                     // Iterate over each photo object
                     for photo in photos {
                         
-                        print("got the data though might have not saved correctly.")
-                        
                         let picture = Picture(context: self.dataController.viewContext)
                         
                         // Construct the photo URL using the properties of the photo object
                         let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
                         
+                        //associate the image with the pin
                         picture.pin = pin
                         
                         // Enter the dispatch group before starting the download
@@ -127,6 +137,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                         
                         let task = session.dataTask(with: url) { (data, response, error) in
                             defer {
+                                
                                 // Leave the dispatch group when the download is complete
                                 downloadGroup.leave()
                             }
@@ -153,11 +164,14 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                         
                         task.resume()
                     }
-                    
                     // Wait for all image downloads to complete
+                    //tested to see if it was saving correctly to context.  It is.
                     downloadGroup.notify(queue: .main) {
+                        
                         try? self.dataController.viewContext.save()
+                        
                     }
+                    
                 }
             }
             
@@ -187,7 +201,6 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
         // Check if the selected annotation view is of type MKPinAnnotationView
         if let pinAnnotationView = view as? MKMarkerAnnotationView {
             
-            print("got the pin")
             // Find the selected pin based on the annotation coordinate
             let selectedCoordinate = pinAnnotationView.annotation?.coordinate
             let selectedLatitude = Float(selectedCoordinate?.latitude ?? 0.0)
@@ -196,7 +209,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
             // Fetch the Pin object from Core Data using the selected latitude and longitude
             let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "latitude == %@ AND longitude == %@", selectedLatitude as NSNumber, selectedLongitude as NSNumber)
-            print("have a pin lat and long")
+            
             do {
                 let pins = try context.fetch(fetchRequest)
                 var imageDataArray: [Data] = []
@@ -205,7 +218,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                     
                     //if the pin does NOT have downloaded Data
                     if selectedPin.photo?.count == 0 {
-                        print("I should be in here")
+                        print("never been downloaded")
                         FlickrClient.getPhotos(lat: selectedLatitude, long: selectedLongitude) { response, error, success in
                             if success {
                                 // Access the photo array
@@ -222,10 +235,10 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                                     // Enter the dispatch group before starting the download
                                     downloadGroup.enter()
                                     
-                                    //let picture = Picture(context: self.dataController.viewContext)
+                                    let picture = Picture(context: self.dataController.viewContext)
                                     
                                     //pin to picture relationship
-                                    //picture.pin = selectedPin
+                                    picture.pin = selectedPin
                                     
                                     // Download the image data from the URL
                                     let session = URLSession.shared
@@ -254,44 +267,49 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate{
                                             return
                                         }
                                         
-                                        imageDataArray.append(imageData)
-                                        stringArray.append(photoURLString)
-                                        
-                                        
+                                        //                                        imageDataArray.append(imageData)
+                                        //                                        stringArray.append(photoURLString)
                                     }
                                     
                                     task.resume()
                                 }
                                 downloadGroup.notify(queue: .main) {
-                                    //try? self.dataController.viewContext.save()
-                                    // Pass the fetched imageData to the next view controller
-                                    if let selectedPin = pins.first {
-                                        if !imageDataArray.isEmpty {
-                                            self.pinImageData = imageDataArray
-                                            self.imageUrls = stringArray
+                                    print("saving")
+                                    try? self.dataController.viewContext.save()
+                                    //get the pictures from CoreData after calling API
+                                    if let pictures = selectedPin.photo?.allObjects as? [Picture] {
+                                        print("fetching the newly downloaded photos")
+                                        for picture in pictures {
+                                            if let imageData = picture.imageData {
+                                                imageDataArray.append(imageData)
+                                            }
                                         }
-                                        self.performSegue(withIdentifier: "Album", sender: selectedPin)
                                     }
+                                    //                                    // Pass the fetched imageData to the next view controller
+                                    //                                    if let selectedPin = pins.first {
+                                    //                                        if !imageDataArray.isEmpty {
+                                    //                                            self.pinImageData = imageDataArray
+                                    //                                            self.imageUrls = stringArray
+                                    //                                        }
+                                    //                                        self.performSegue(withIdentifier: "Album", sender: selectedPin)
+                                    //                                    }
                                 }
                             }
                         }
-                        // Pin does not have any downloaded images
-                        // Call the Flickr API and download images for the pin
-                        // Save the downloaded images to Core Data
                         
-                        // After saving, fetch the images again from Core Data
-                        
-                        // Access the imageData property of the first picture
-                        //                        if let pictures = selectedPin.photo?.allObjects as? [Picture] {
-                        //                            // Access the imageData property of the first picture
-                        //                            imageData = pictures.first?.imageData
-                        //                        }
                     } else {
+                        print("has been downloaded")
                         //if it DOES
+                        //retrieve these photos from CoreData.
+                        //Pass these onto the next controller
                         if let pictures = selectedPin.photo?.allObjects as? [Picture] {
-                            // Access the imageData property of the first picture
-                            //pinImageData = pictures.first?.imageData
+                            for picture in pictures {
+                                if let imageData = picture.imageData {
+                                    imageDataArray.append(imageData)
+                                }
+                            }
                         }
+                        self.pinImageData = imageDataArray
                         performSegue(withIdentifier: "Album", sender: selectedPin)
                     }
                 }

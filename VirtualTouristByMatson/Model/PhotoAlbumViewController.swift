@@ -78,19 +78,21 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         // Retrieve the imageData from the selected pin using the index path
         let imageData = images[indexPath.item]
         
-        if imageData.isDownloaded {
-            // The image has been downloaded, so display it in the cell
-            cell.photo.image = imageData.image
-        } else {
-            // The image is not downloaded yet, so display a placeholder
-            cell.photo.image = UIImage(named: "placeholder")
-            
-            // Start downloading the image asynchronously
-            //converting the urls into data bytes...
-            //how do I reference the urls again?
-            //convert the imageURLS array to the downloads. 
-            
-        }
+        cell.photo.image = imageData.image
+        
+//        if imageData.isDownloaded {
+//            // The image has been downloaded, so display it in the cell
+//            cell.photo.image = imageData.image
+//        } else {
+//            // The image is not downloaded yet, so display a placeholder
+//            cell.photo.image = UIImage(named: "placeholder")
+//
+//            // Start downloading the image asynchronously
+//            //converting the urls into data bytes...
+//            //how do I reference the urls again?
+//            //convert the imageURLS array to the downloads.
+//
+//        }
         
         return cell
     }
