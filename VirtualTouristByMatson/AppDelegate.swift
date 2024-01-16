@@ -15,21 +15,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     //to persist when the app first appears running
-    let dataController = DataController(modelName: "VirtualTouristByMatson")
+    //let dataController = DataController(modelName: "VirtualTouristByMatson")
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        //window = UIWindow(frame: UIScreen.main.bounds)
+        DataController.shared.load()
+        
         // Override point for customization after application launch.
-        dataController.load()
+        //dataController.load()
         
-        //injection code to use DataController.
-        //injection code to use DataController.
-        let navigationController = window?.rootViewController as! UINavigationController
-        let notebooksListViewController = navigationController.topViewController as! TravelLocationsViewController
-        notebooksListViewController.dataController = dataController
-        
-        //window?.makeKeyAndVisible()
+//        if let navigationController = window?.rootViewController as? UINavigationController {
+//            if let travelLocationsViewController = navigationController.topViewController as? TravelLocationsViewController {
+//                travelLocationsViewController.dataController = dataController
+//            }
+//        }
         
         return true
     }
@@ -53,19 +52,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         
         //save context
-        saveViewContext()
+        //saveViewContext()
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         
         //save context
-        saveViewContext()
+        //saveViewContext()
     }
     
     func saveViewContext(){
-        try? dataController.viewContext.save()
+        //try? dataController.viewContext.save()
     }
-
+    
 }
 
