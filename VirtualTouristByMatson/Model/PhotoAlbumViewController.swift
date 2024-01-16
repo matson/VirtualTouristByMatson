@@ -74,7 +74,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                     }
                 }
             }
-        //IF DOES
+            //IF DOES
         } else {
             print("has photos")
         }
@@ -108,8 +108,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     // MARK: Collection View Data Source
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-     
-        return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+        if fetchedResultsController.sections?[section].numberOfObjects ?? 0 > 0 {
+            // Return the number of objects from the fetched results controller
+            return fetchedResultsController.sections?[section].numberOfObjects ?? 0
+        } else {
+            // Return the count of downloaded images if no photos are present
+            return downloadedImages.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -124,7 +129,8 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! VirtualTouristViewCell
-
+        print("got to the beginning")
+        print(downloadedImages)
         if fetchedResultsController.sections?[indexPath.section].numberOfObjects ?? 0 > 0 {
             print("getting stuff from fetch")
             // Retrieve the imageData from the fetched results controller using the index path
@@ -142,9 +148,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             let image = downloadedImages[indexPath.item]
             cell.photo.image = image
         }
-        
+        print("got to the end")
         return cell
-
+        
     }
     
     //to Delete the cell/photo
@@ -194,7 +200,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
     
     func setUpMap(){
-    //annotate map to show location of photos downloaded from previous controller
+        //annotate map to show location of photos downloaded from previous controller
         if let location = selectedLocation {
             let annotation = MKPointAnnotation()
             annotation.coordinate = location.coordinate
