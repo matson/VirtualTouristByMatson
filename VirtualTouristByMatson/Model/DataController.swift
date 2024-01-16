@@ -14,9 +14,7 @@ class DataController {
    
     //Singleton Way:
     static let shared = DataController(modelName: "VirtualTouristByMatson")
-    //hold the persistent container
-    //hold the persistent store, and help with the context
-
+    
     let persistentContainer:NSPersistentContainer
 
     var viewContext: NSManagedObjectContext {
@@ -26,16 +24,6 @@ class DataController {
     init(modelName:String) {
         persistentContainer = NSPersistentContainer(name: modelName)
     }
-
-//    func load(completion: (() -> Void)? = nil) {
-//        persistentContainer.loadPersistentStores { _, error in
-//            guard error == nil else {
-//                fatalError("Failed to load persistent stores: \(error!)")
-//            }
-//            //self.autoSaveViewContext()
-//            completion?()
-//        }
-//    }
     
     func load(completion: (() -> Void)? = nil) {
         persistentContainer.loadPersistentStores { (_, error) in

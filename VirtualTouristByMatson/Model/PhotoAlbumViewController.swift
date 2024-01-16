@@ -26,6 +26,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     //need this
     var selectedLocation: CLLocation?
+    var downloadedImages = [UIImage]()
     
     //For the images:
     fileprivate func setUpFetchedResultsController() {
@@ -54,7 +55,29 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setUpFetchedResultsController()
+        //logic for if it has downloaded photos OR not
+        
+        //IF DOES NOT
+        if pin.photo?.count == 0 {
+            print("no photos")
+            // Initiate the download of photos from Flickr
+            FlickrImage.shared.downloadImages(forPin: pin, dataController: dataController) { images, error in
+                if let error = error {
+                    print("there is an error with the downloads")
+                } else if let images = images {
+                    print("got here to images")
+                    //assign to array
+                    self.downloadedImages = images
+                    print("got the array here")
+                    DispatchQueue.main.async {
+                        self.photoView.reloadData()
+                    }
+                }
+            }
+        //IF DOES
+        } else {
+            print("has photos")
+        }
         
         setUpMap()
         
@@ -64,7 +87,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         
         setRows()
         
-        //makeImages()
+        print(downloadedImages)
         
         // Reload the collection view to display the images
         photoView.reloadData()
@@ -85,7 +108,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     // MARK: Collection View Data Source
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        //return images.count
+     
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
     
@@ -101,22 +124,27 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! VirtualTouristViewCell
-        
-        // Retrieve the imageData from the selected pin using the index path
-        let photo = fetchedResultsController.object(at: indexPath)
-        
-        if let imageData = photo.imageData {
-            cell.photo.image = UIImage(data: imageData)
-        } else {
-            cell.photo.image = UIImage(named: "placeholder")
+
+        if fetchedResultsController.sections?[indexPath.section].numberOfObjects ?? 0 > 0 {
+            print("getting stuff from fetch")
+            // Retrieve the imageData from the fetched results controller using the index path
+            let photo = fetchedResultsController.object(at: indexPath)
             
-            // Start downloading the image asynchronously
-            //converting the urls into data bytes...
-            //how do I reference the urls again?
-            //convert the imageURLS array to the downloads.
+            if let imageData = photo.imageData {
+                cell.photo.image = UIImage(data: imageData)
+            } else {
+                cell.photo.image = UIImage(named: "placeholder")
+            }
+        } else {
+            print("getting from image array")
+            print(downloadedImages)
+            // Retrieve the image from the downloaded images array using the index path
+            let image = downloadedImages[indexPath.item]
+            cell.photo.image = image
         }
         
         return cell
+
     }
     
     //to Delete the cell/photo
@@ -165,20 +193,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         photoView.collectionViewLayout = layout
     }
     
-    //    func makeImages(){
-    //        // Convert the imageData to UIImage and populate the images array
-    //        if let imageData = imageData {
-    //            for data in imageData {
-    //                if let image = UIImage(data: data) {
-    //                    //images.append(image)
-    //                    let imageModel = ImageModel(image: image, isDownloaded: false)
-    //                    images.append(imageModel)
-    //                }
-    //            }
-    //        }
-    //
-    //    }
-    
     func setUpMap(){
     //annotate map to show location of photos downloaded from previous controller
         if let location = selectedLocation {
@@ -192,34 +206,5 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     }
 }
 
-//Now implement the is empty logic.
-//then all you have to do is implement the new collection feature, then you should be done! Yay!  and refactor of course. 
-//class PhotoAlbumViewController: UIViewController {
-//    var pin: Pin!
-//
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//
-//        if !pin.hasPhotos {
-//            // Initiate the download of photos from Flickr
-//            downloadPhotos()
-//        } else {
-//            // Load the saved photos from Core Data and display them
-//            loadSavedPhotos()
-//        }
-//    }
-//
-//    func downloadPhotos() {
-//        // Implement the logic to download photos from Flickr
-//        // Once the download is complete, save the photos to Core Data
-//        // Set the `hasPhotos` property of the pin to `true`
-//        // Display the downloaded photos in the collection view
-//    }
-//
-//    func loadSavedPhotos() {
-//        // Implement the logic to fetch and display saved photos from Core Data
-//    }
-//}
-//By implementing this logic in the PhotoAlbumViewController, you can ensure that the photos are immediately downloaded if there are no saved images for the selected pin.
 
 
