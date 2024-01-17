@@ -11,24 +11,12 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
-    //var dataController: DataController!
+   
     var window: UIWindow?
-    
-    //to persist when the app first appears running
-    //let dataController = DataController(modelName: "VirtualTouristByMatson")
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         DataController.shared.load()
-        
-        // Override point for customization after application launch.
-        //dataController.load()
-        
-//        if let navigationController = window?.rootViewController as? UINavigationController {
-//            if let travelLocationsViewController = navigationController.topViewController as? TravelLocationsViewController {
-//                travelLocationsViewController.dataController = dataController
-//            }
-//        }
         
         return true
     }
@@ -51,20 +39,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
         
-        //save context
-        //saveViewContext()
+        
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         
-        //save context
-        //saveViewContext()
+   
     }
     
-    func saveViewContext(){
-        //try? dataController.viewContext.save()
-    }
+   
     
 }
 

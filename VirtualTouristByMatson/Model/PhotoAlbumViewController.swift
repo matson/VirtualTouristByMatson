@@ -27,6 +27,7 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     //need this
     var selectedLocation: CLLocation?
     var downloadedImages = [UIImage]()
+    var urlsArray = [String]()
     
     //For the images:
     fileprivate func setUpFetchedResultsController() {
@@ -48,36 +49,13 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         setUpFetchedResultsController()
         
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //logic for if it has downloaded photos OR not
-        
-        //IF DOES NOT
-        if pin.photo?.count == 0 {
-            print("no photos")
-            // Initiate the download of photos from Flickr
-            FlickrImage.shared.downloadImages(forPin: pin, dataController: dataController) { images, error in
-                if let error = error {
-                    print("there is an error with the downloads")
-                } else if let images = images {
-                    print("got here to images")
-                    //assign to array
-                    self.downloadedImages = images
-                    print("got the array here")
-                    DispatchQueue.main.async {
-                        self.photoView.reloadData()
-                    }
-                }
-            }
-            //IF DOES
-        } else {
-            print("has photos")
-        }
         
         setUpMap()
         
@@ -87,8 +65,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         
         setRows()
         
-        print(downloadedImages)
-        
         // Reload the collection view to display the images
         photoView.reloadData()
         
@@ -96,26 +72,83 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     @IBAction func newCollection(_ sender: UIButton) {
         
+        let lat = pin.latitude
+        let long = pin.longitude
         //this should replace the images with a new set from Flickr.
-        //use this number as the page parameter to get the random images.
+        
+        FlickrClient.getPhotosRandom(lat: lat, long: long) { response, error, success in
+                if success {
+                    let photos = response!.photos.photo
+                    var newUrlsArray = [String]()
+                    
+                    for photo in photos {
+                        let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                        newUrlsArray.append(photoURLString)
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.urlsArray = newUrlsArray
+                        self.photoView.reloadData()
+                    }
+                } else {
+                    // Handle error
+                }
+            }
+        
         //when pressing this I should make a call to the random page url which will fetch
         //a different set of photos
-        //make the call getPhotosRandom and populate the imageArray
-        
-        
+        //make the call getPhotosRandom and populate the urlArray with the new urls
+        //find a way to populate the cells with this new random data
     }
     
     // MARK: Collection View Data Source
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        
         if fetchedResultsController.sections?[section].numberOfObjects ?? 0 > 0 {
             // Return the number of objects from the fetched results controller
             return fetchedResultsController.sections?[section].numberOfObjects ?? 0
         } else {
-            // Return the count of downloaded images if no photos are present
-            return downloadedImages.count
+            if urlsArray.isEmpty {
+                
+                let lat = pin.latitude
+                let long = pin.longitude
+                //stage 1:
+                //download all of the image information and create array of URLS:
+                FlickrClient.getPhotos(lat: lat, long: long) { [weak self] response, error, success in
+                    if success {
+                        let photos = response!.photos.photo
+                        for photo in photos {
+                            let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                            
+                            self?.urlsArray.append(photoURLString)
+                            
+                            // Create a new Picture instance
+                            let picture = Picture(context: self!.dataController.viewContext)
+                            picture.pin = self!.pin
+                            
+                            // Save the Picture instance to Core Data
+                            do {
+                                try self!.dataController.viewContext.save()
+                            } catch {
+                                // Handle error
+                                print("Failed to save Picture to Core Data: \(error)")
+                            }
+                        }
+                        
+                        DispatchQueue.main.async {
+                            self?.photoView.reloadData()
+                        }
+                    } else {
+                        // Handle error
+                    }
+                }
+                
+            }
+            return urlsArray.count
         }
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let collectionViewWidth = collectionView.bounds.width
@@ -129,10 +162,9 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! VirtualTouristViewCell
-        print("got to the beginning")
-        print(downloadedImages)
+        
         if fetchedResultsController.sections?[indexPath.section].numberOfObjects ?? 0 > 0 {
-            print("getting stuff from fetch")
+            
             // Retrieve the imageData from the fetched results controller using the index path
             let photo = fetchedResultsController.object(at: indexPath)
             
@@ -142,13 +174,25 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
                 cell.photo.image = UIImage(named: "placeholder")
             }
         } else {
-            print("getting from image array")
-            print(downloadedImages)
-            // Retrieve the image from the downloaded images array using the index path
-            let image = downloadedImages[indexPath.item]
-            cell.photo.image = image
+            //download each image individually by indexing array:
+            // Check if the index is within the bounds of the urlsArray
+            if indexPath.item < urlsArray.count {
+                let url = urlsArray[indexPath.item]
+                
+                FlickrImage.shared.downloadImage(from: url) { image, error in
+                    if let error = error {
+                        print("There is an error with the image download: \(error)")
+                    } else if let image = image {
+                        DispatchQueue.main.async {
+                            // Check if the cell is still visible at the same index path
+                            if let currentIndexPath = collectionView.indexPath(for: cell), currentIndexPath == indexPath {
+                                cell.photo.image = image
+                            }
+                        }
+                    }
+                }
+            }
         }
-        print("got to the end")
         return cell
         
     }
@@ -156,28 +200,38 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     //to Delete the cell/photo
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        let selectedPhoto = fetchedResultsController.object(at: indexPath)
-        
-        // Delete the selected photo from Core Data
-        dataController.viewContext.delete(selectedPhoto)
-        
-        // Save the changes to Core Data
-        do {
-            try dataController.viewContext.save()
-        } catch {
-            print("Error saving context: \(error)")
+        if fetchedResultsController.sections?[indexPath.section].numberOfObjects ?? 0 > 0 {
+            let selectedPhoto = fetchedResultsController.object(at: indexPath)
+            
+            // Delete the selected photo from Core Data
+            dataController.viewContext.delete(selectedPhoto)
+            
+            // Save the changes to Core Data
+            do {
+                try dataController.viewContext.save()
+            } catch {
+                print("Error saving context: \(error)")
+            }
+            
+            // Update the fetched results controller to reflect the deletion
+            try? fetchedResultsController.performFetch()
+            
+            // Animate the deletion in the collection view
+            collectionView.performBatchUpdates({
+                collectionView.deleteItems(at: [indexPath])
+            }, completion: nil)
+            
+            // Reload the collection view to reflect the updated data
+            collectionView.reloadData()
+        } else {
+            // Handle deletion for the urlsArray
+            urlsArray.remove(at: indexPath.item)
+            
+            // Animate the deletion in the collection view
+            collectionView.performBatchUpdates({
+                collectionView.deleteItems(at: [indexPath])
+            }, completion: nil)
         }
-        
-        // Update the fetched results controller to reflect the deletion
-        try? fetchedResultsController.performFetch()
-        
-        // Animate the deletion in the collection view
-        collectionView.performBatchUpdates({
-            collectionView.deleteItems(at: [indexPath])
-        }, completion: nil)
-        
-        // Reload the collection view to reflect the updated data
-        collectionView.reloadData()
         
     }
     
