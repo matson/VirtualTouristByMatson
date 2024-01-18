@@ -39,4 +39,29 @@ class FlickrImage {
         task.resume()
     }
     
+    //retrieve just the raw data
+    func downloadData(from url: String, completion: @escaping (Data?, Error?) -> Void) {
+        
+        guard let imageUrl = URL(string: url) else {
+            completion(nil, nil)
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: imageUrl) { (data, response, error) in
+            if let error = error {
+                completion(nil, error)
+                return
+            }
+            
+            guard let data = data else {
+                completion(nil, nil)
+                return
+            }
+            
+            completion(data, nil)
+        }
+        
+        task.resume()
+    }
+    
 }

@@ -56,6 +56,51 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let lat = pin.latitude
+        let long = pin.longitude
+        
+        FlickrClient.getPhotos(lat: lat, long: long) { response, error, success in
+            if success {
+                let photos = response!.photos.photo
+                var newUrlsArray = [String]()
+                
+                for photo in photos {
+                    let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                    newUrlsArray.append(photoURLString)
+                    
+                    // Download the image data
+                    FlickrImage.shared.downloadData(from: photoURLString) { imageData, error in
+                        if let error = error {
+                            print("There is an error with the image download: \(error)")
+                        } else if let imageData = imageData {
+                            DispatchQueue.main.async {
+                                // Create a new Picture instance
+                                let picture = Picture(context: self.dataController.viewContext)
+                                picture.pin = self.pin
+                                
+                                // Set the imageData attribute
+                                picture.imageData = imageData
+                                
+                                // Save the Picture instance and the data to Core Data
+                                do {
+                                    try self.dataController.viewContext.save()
+                                } catch {
+                                    // Handle error
+                                    print("Failed to save Picture to Core Data: \(error)")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    self.urlsArray = newUrlsArray
+                    self.photoView.reloadData()
+                }
+            } else {
+                // Handle error
+            }
+        }
         
         setUpMap()
         
@@ -77,23 +122,47 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         //this should replace the images with a new set from Flickr.
         
         FlickrClient.getPhotosRandom(lat: lat, long: long) { response, error, success in
-                if success {
-                    let photos = response!.photos.photo
-                    var newUrlsArray = [String]()
+            if success {
+                let photos = response!.photos.photo
+                var newUrlsArray = [String]()
+                
+                for photo in photos {
+                    let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                    newUrlsArray.append(photoURLString)
                     
-                    for photo in photos {
-                        let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
-                        newUrlsArray.append(photoURLString)
+                    // Download the image data
+                    FlickrImage.shared.downloadData(from: photoURLString) { imageData, error in
+                        if let error = error {
+                            print("There is an error with the image download: \(error)")
+                        } else if let imageData = imageData {
+                            DispatchQueue.main.async {
+                                // Create a new Picture instance
+                                let picture = Picture(context: self.dataController.viewContext)
+                                picture.pin = self.pin
+                                
+                                // Set the imageData attribute
+                                picture.imageData = imageData
+                                
+                                // Save the Picture instance to Core Data
+                                do {
+                                    try self.dataController.viewContext.save()
+                                } catch {
+                                    // Handle error
+                                    print("Failed to save Picture to Core Data: \(error)")
+                                }
+                            }
+                        }
                     }
-                    
-                    DispatchQueue.main.async {
-                        self.urlsArray = newUrlsArray
-                        self.photoView.reloadData()
-                    }
-                } else {
-                    // Handle error
                 }
+                
+                DispatchQueue.main.async {
+                    self.urlsArray = newUrlsArray
+                    self.photoView.reloadData()
+                }
+            } else {
+                // Handle error
             }
+        }
         
         //when pressing this I should make a call to the random page url which will fetch
         //a different set of photos
@@ -109,42 +178,6 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             // Return the number of objects from the fetched results controller
             return fetchedResultsController.sections?[section].numberOfObjects ?? 0
         } else {
-            if urlsArray.isEmpty {
-                
-                let lat = pin.latitude
-                let long = pin.longitude
-                //stage 1:
-                //download all of the image information and create array of URLS:
-                FlickrClient.getPhotos(lat: lat, long: long) { [weak self] response, error, success in
-                    if success {
-                        let photos = response!.photos.photo
-                        for photo in photos {
-                            let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
-                            
-                            self?.urlsArray.append(photoURLString)
-                            
-                            // Create a new Picture instance
-                            let picture = Picture(context: self!.dataController.viewContext)
-                            picture.pin = self!.pin
-                            
-                            // Save the Picture instance to Core Data
-                            do {
-                                try self!.dataController.viewContext.save()
-                            } catch {
-                                // Handle error
-                                print("Failed to save Picture to Core Data: \(error)")
-                            }
-                        }
-                        
-                        DispatchQueue.main.async {
-                            self?.photoView.reloadData()
-                        }
-                    } else {
-                        // Handle error
-                    }
-                }
-                
-            }
             return urlsArray.count
         }
     }
@@ -164,16 +197,12 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as! VirtualTouristViewCell
         
         if fetchedResultsController.sections?[indexPath.section].numberOfObjects ?? 0 > 0 {
+            print("should not be in here either.")
             
-            // Retrieve the imageData from the fetched results controller using the index path
-            let photo = fetchedResultsController.object(at: indexPath)
+            configureCell(cell, at: indexPath)
             
-            if let imageData = photo.imageData {
-                cell.photo.image = UIImage(data: imageData)
-            } else {
-                cell.photo.image = UIImage(named: "placeholder")
-            }
         } else {
+            print("should not be in here")
             //download each image individually by indexing array:
             // Check if the index is within the bounds of the urlsArray
             if indexPath.item < urlsArray.count {
@@ -262,6 +291,64 @@ class PhotoAlbumViewController: UIViewController, UICollectionViewDelegate, UICo
             
             let region = MKCoordinateRegion(center: location.coordinate, latitudinalMeters: 1000, longitudinalMeters: 1000)
             mapView.setRegion(region, animated: true)
+        }
+    }
+    
+    func configureCell(_ cell: VirtualTouristViewCell, at indexPath: IndexPath) {
+        // Retrieve the imageData from the fetched results controller using the index path
+        let picture = fetchedResultsController.object(at: indexPath)
+        if let imageData = picture.imageData {
+            print("should not be here")
+            cell.photo.image = UIImage(data: imageData)
+        } else {
+            print("only here")
+            cell.photo.image = UIImage(named: "placeholder")
+            //for some reason there hasn't been data saved for the picture for this pin
+            //steps:
+            let lat = pin.latitude
+            let long = pin.longitude
+            
+            FlickrClient.getPhotos(lat: lat, long: long) { response, error, success in
+                if success {
+                    let photos = response!.photos.photo
+                    
+                    for photo in photos {
+                        let photoURLString = "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret).jpg"
+                        
+                        // Download the image data
+                        FlickrImage.shared.downloadData(from: photoURLString) { imageData, error in
+                            if let error = error {
+                                print("There is an error with the image download: \(error)")
+                            } else if let imageData = imageData {
+                                DispatchQueue.main.async {
+                                    // Check if the cell is still visible at the same index path
+                                   
+                                        // Update the cell's image with the downloaded image
+                                    cell.photo.image = UIImage(data: imageData)
+                                    //}
+                                    
+                                    // Set the imageData attribute
+                                    picture.imageData = imageData
+                                    
+                                    // Save the Picture instance and the data to Core Data
+                                    do {
+                                        try self.dataController.viewContext.save()
+                                    } catch {
+                                        // Handle error
+                                        print("Failed to save Picture to Core Data: \(error)")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.photoView.reloadData()
+                    }
+                } else {
+                    // Handle error
+                }
+            }
         }
     }
 }

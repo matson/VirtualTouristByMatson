@@ -28,7 +28,7 @@ class FlickrClient {
         
         var stringValue: String {
             switch self {
-            case .getPhotos(let lat, let long): return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&format=json&nojsoncallback=1&lat=\(lat)&lon=\(long)&radius=5"
+            case .getPhotos(let lat, let long): return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&per_page=20&format=json&nojsoncallback=1&lat=\(lat)&lon=\(long)&radius=5"
             case .getPhotosRandom(let page):
                 return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&format=json&nojsoncallback=1&page=\(page)"
             }
