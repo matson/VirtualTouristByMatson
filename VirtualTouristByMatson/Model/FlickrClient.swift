@@ -30,7 +30,7 @@ class FlickrClient {
             switch self {
             case .getPhotos(let lat, let long): return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&per_page=20&format=json&nojsoncallback=1&lat=\(lat)&lon=\(long)&radius=5"
             case .getPhotosRandom(let page):
-                return Endpoints.baseFlickrAPI + "flickr.photos.search\(FlickrClient.Endpoints.apiKeyParam)" + "&format=json&nojsoncallback=1&page=\(page)"
+                return Endpoints.baseFlickrAPI + "flickr.photos.getRecent\(FlickrClient.Endpoints.apiKeyParam)" + "&per_page=20&format=json&nojsoncallback=1&page=\(page)"
             }
         }
         
@@ -42,7 +42,6 @@ class FlickrClient {
     }
     
     class func taskForGETRequest<ResponseType: Decodable>(url: URL, responseType: ResponseType.Type, completion: @escaping (ResponseType?, Error?, Bool) -> Void) -> URLSessionTask {
-    
         // Create a data task with the URL
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         
@@ -59,8 +58,10 @@ class FlickrClient {
             do {
                 
                 let jsonObject = try decoder.decode(ResponseType.self, from: data)
+               
                 completion(jsonObject, nil, true)
             } catch {
+               
                 completion(nil, error, false)
             }
         }
@@ -84,8 +85,10 @@ class FlickrClient {
         let randomPage = Int.random(in: 1...100) // Generate a random page number
         taskForGETRequest(url: Endpoints.getPhotosRandom(randomPage).url, responseType: PhotoSearchResponse.self) { response, error, success in
             if let response = response {
+                
                 completion(response, nil, true)
             } else {
+               
                 completion(nil, error, false)
             }
         }
