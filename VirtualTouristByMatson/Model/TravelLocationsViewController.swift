@@ -14,9 +14,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetc
     @IBOutlet weak var mapView: MKMapView!
     
     //Singleton code
-    var dataController: DataController {
-        return DataController.shared
-    }
+    var dataController: DataController!
     
     //defined to fetch pins
     var fetchedResultsController:NSFetchedResultsController<Pin>!
@@ -159,8 +157,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetc
         if segue.identifier == "Album" {
             if let selectedPin = sender as? Pin {
                 let destinationVC = segue.destination as! PhotoAlbumViewController
-                
-                //send through singleton datacontroller
+            
                 destinationVC.dataController = dataController
                 //send selected pin
                 destinationVC.pin = selectedPin
