@@ -12,9 +12,6 @@ import CoreData
 
 class DataController {
    
-    //Singleton Way:
-    //static let shared = DataController(modelName: "VirtualTouristByMatson")
-    
     let persistentContainer:NSPersistentContainer
 
     var viewContext: NSManagedObjectContext {

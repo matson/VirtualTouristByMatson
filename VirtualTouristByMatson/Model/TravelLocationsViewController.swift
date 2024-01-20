@@ -13,7 +13,6 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetc
     
     @IBOutlet weak var mapView: MKMapView!
     
-    //Singleton code
     var dataController: DataController!
     
     //defined to fetch pins

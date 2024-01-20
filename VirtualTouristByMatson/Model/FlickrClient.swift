@@ -12,10 +12,7 @@ import UIKit
 
 class FlickrClient {
     
-    //https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=6af4caaf64a51bcb1aeb1ad1418f878e&format=json&nojsoncallback=1&lat=37.7749&lon=-122.4194&radius=5
-    
     static let apiKey = "6af4caaf64a51bcb1aeb1ad1418f878e"
-    //secret: 62e462df315c7ab4
     
     enum Endpoints {
         
@@ -42,6 +39,7 @@ class FlickrClient {
     }
     
     class func taskForGETRequest<ResponseType: Decodable>(url: URL, responseType: ResponseType.Type, completion: @escaping (ResponseType?, Error?, Bool) -> Void) -> URLSessionTask {
+        
         // Create a data task with the URL
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
         
