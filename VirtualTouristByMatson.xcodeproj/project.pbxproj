@@ -94,15 +94,10 @@
 		3F1061DF2B2A3F6900EBED3C /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				3F10598A2B29225100BBCB70 /* VirtualTouristByMatson.xcdatamodeld */,
+				3FA9FDAE2B5EB447001E513C /* API */,
+				3FA9FDAD2B5EB40E001E513C /* Response */,
+				3FA9FDAC2B5EB3F0001E513C /* CoreData */,
 				3F1061E52B2A4F7000EBED3C /* VirtualTouristViewCell.swift */,
-				3FBB9E3F2B2B5D3200EA568F /* FlickrClient.swift */,
-				3FBB9E412B2B70B300EA568F /* PhotoSearchResponse.swift */,
-				3FBB9E452B2B792D00EA568F /* Photos.swift */,
-				3FBB9E472B2B795500EA568F /* Photo.swift */,
-				3FBB9E492B32008000EA568F /* DataController.swift */,
-				3FC6CEB92B34A4CF00B07952 /* ImageModel.swift */,
-				3FEF20232B56A589008F8887 /* FlickrImage.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -115,6 +110,35 @@
 			);
 			name = Controller;
 			path = Model;
+			sourceTree = "<group>";
+		};
+		3FA9FDAC2B5EB3F0001E513C /* CoreData */ = {
+			isa = PBXGroup;
+			children = (
+				3FC6CEB92B34A4CF00B07952 /* ImageModel.swift */,
+				3FBB9E492B32008000EA568F /* DataController.swift */,
+				3F10598A2B29225100BBCB70 /* VirtualTouristByMatson.xcdatamodeld */,
+			);
+			name = CoreData;
+			sourceTree = "<group>";
+		};
+		3FA9FDAD2B5EB40E001E513C /* Response */ = {
+			isa = PBXGroup;
+			children = (
+				3FBB9E412B2B70B300EA568F /* PhotoSearchResponse.swift */,
+				3FBB9E472B2B795500EA568F /* Photo.swift */,
+				3FBB9E452B2B792D00EA568F /* Photos.swift */,
+			);
+			path = Response;
+			sourceTree = "<group>";
+		};
+		3FA9FDAE2B5EB447001E513C /* API */ = {
+			isa = PBXGroup;
+			children = (
+				3FEF20232B56A589008F8887 /* FlickrImage.swift */,
+				3FBB9E3F2B2B5D3200EA568F /* FlickrClient.swift */,
+			);
+			name = API;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
