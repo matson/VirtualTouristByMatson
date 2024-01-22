@@ -80,7 +80,7 @@ class TravelLocationsViewController: UIViewController, MKMapViewDelegate, NSFetc
     func setUpMap(){
         // Define the initial region of the map
         let initialLocation = CLLocation(latitude: 37.7749, longitude: -122.4194)
-        let regionRadius: CLLocationDistance = 3000
+        let regionRadius: CLLocationDistance = 1000000
         let coordinateRegion = MKCoordinateRegion(center: initialLocation.coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
         
         // Set the initial region of the map
