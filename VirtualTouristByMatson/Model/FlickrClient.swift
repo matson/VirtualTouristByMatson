@@ -12,7 +12,7 @@ import UIKit
 
 class FlickrClient {
     
-    static let apiKey = "6af4caaf64a51bcb1aeb1ad1418f878e"
+    static let apiKey = "YOUR_FLICKR_API_KEY"
     
     enum Endpoints {
         
